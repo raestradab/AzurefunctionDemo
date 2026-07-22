@@ -1,6 +1,6 @@
 namespace AzurefunctionDemo.Services;
 
-public class GreetingService
+public static class GreetingService
 {
     public static string BuildGreeting(string? name)
     {
