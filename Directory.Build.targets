@@ -1,0 +1,22 @@
+<Project>
+
+  <!--
+    Runs the SonarAnalyzer.CSharp Roslyn analyzer at build time so the same rules
+    SonarCloud checks after a push (S1118, S6966, etc.) show up locally as build
+    warnings first. No token or network access required.
+
+    The package ships its analyzer DLL as analyzers/SonarAnalyzer.CSharp.dll instead of
+    the analyzers/dotnet/cs/ convention NuGet auto-wires for SDK-style projects, so it
+    has to be referenced explicitly via the Analyzer item below.
+  -->
+  <PropertyGroup>
+    <SonarAnalyzerVersion>10.29.0.143774</SonarAnalyzerVersion>
+    <SonarAnalyzerPath>$(NuGetPackageRoot)sonaranalyzer.csharp\$(SonarAnalyzerVersion)\analyzers\SonarAnalyzer.CSharp.dll</SonarAnalyzerPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="$(SonarAnalyzerVersion)" PrivateAssets="all" />
+    <Analyzer Include="$(SonarAnalyzerPath)" Condition="Exists('$(SonarAnalyzerPath)')" />
+  </ItemGroup>
+
+</Project>
