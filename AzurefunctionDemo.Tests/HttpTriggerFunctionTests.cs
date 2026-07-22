@@ -1,5 +1,4 @@
 using System.Text;
-using AzurefunctionDemo.Services;
 using AzurefunctionDemo.Tests.Fakes;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -10,9 +9,7 @@ namespace AzurefunctionDemo.Tests;
 
 public class HttpTriggerFunctionTests
 {
-    private readonly HttpTriggerFunction _sut = new(
-        NullLogger<HttpTriggerFunction>.Instance,
-        new GreetingService());
+    private readonly HttpTriggerFunction _sut = new(NullLogger<HttpTriggerFunction>.Instance);
 
     private static FunctionContext CreateFunctionContext() => Mock.Of<FunctionContext>();
 

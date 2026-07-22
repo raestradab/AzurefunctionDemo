@@ -1,4 +1,3 @@
-using AzurefunctionDemo.Services;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,8 +8,7 @@ var host = new HostBuilder()
     {
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
-        services.AddSingleton<GreetingService>();
     })
     .Build();
 
-host.Run();
+await host.RunAsync();

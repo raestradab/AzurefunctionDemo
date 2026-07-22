@@ -8,12 +8,10 @@ namespace AzurefunctionDemo;
 public class HttpTriggerFunction
 {
     private readonly ILogger<HttpTriggerFunction> _logger;
-    private readonly GreetingService _greetingService;
 
-    public HttpTriggerFunction(ILogger<HttpTriggerFunction> logger, GreetingService greetingService)
+    public HttpTriggerFunction(ILogger<HttpTriggerFunction> logger)
     {
         _logger = logger;
-        _greetingService = greetingService;
     }
 
     [Function("HttpTriggerFunction")]
@@ -33,7 +31,7 @@ public class HttpTriggerFunction
         var response = req.CreateResponse(System.Net.HttpStatusCode.OK);
         response.Headers.Add("Content-Type", "text/plain; charset=utf-8");
 
-        var responseMessage = _greetingService.BuildGreeting(name);
+        var responseMessage = GreetingService.BuildGreeting(name);
 
         await response.WriteStringAsync(responseMessage);
 
