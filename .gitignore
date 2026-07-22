@@ -3,3 +3,5 @@ obj/
 local.settings.json
 .vs/
 *.user
+TestResults/
+.sonar/

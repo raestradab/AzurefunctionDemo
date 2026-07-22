@@ -1,3 +1,4 @@
+using AzurefunctionDemo.Services;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -7,10 +8,12 @@ namespace AzurefunctionDemo;
 public class HttpTriggerFunction
 {
     private readonly ILogger<HttpTriggerFunction> _logger;
+    private readonly GreetingService _greetingService;
 
-    public HttpTriggerFunction(ILogger<HttpTriggerFunction> logger)
+    public HttpTriggerFunction(ILogger<HttpTriggerFunction> logger, GreetingService greetingService)
     {
         _logger = logger;
+        _greetingService = greetingService;
     }
 
     [Function("HttpTriggerFunction")]
@@ -30,9 +33,7 @@ public class HttpTriggerFunction
         var response = req.CreateResponse(System.Net.HttpStatusCode.OK);
         response.Headers.Add("Content-Type", "text/plain; charset=utf-8");
 
-        var responseMessage = string.IsNullOrEmpty(name)
-            ? "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response."
-            : $"Hello2, {name}. This HTTP triggered function executed successfully.";
+        var responseMessage = _greetingService.BuildGreeting(name);
 
         await response.WriteStringAsync(responseMessage);
 

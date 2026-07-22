@@ -1,0 +1,106 @@
+# Continuous Integration: builds the solution, runs the xUnit test suite with code
+# coverage, and publishes the results to SonarCloud.
+#
+# Runs on every push and on pull requests targeting master. This is intentionally kept
+# separate from azure-functions-app-dotnet.yml, which only handles deployment on push
+# to master.
+#
+# Required repository configuration:
+#   - Secret SONAR_TOKEN: a SonarCloud token (My Account > Security on sonarcloud.io).
+#   - The project must exist in SonarCloud under organization "raestradab" with
+#     project key "raestradab_AzurefunctionDemo" (adjust sonar.projectKey/sonar.organization
+#     below if you used different values when creating the project on sonarcloud.io).
+
+name: CI - Build, Test & Sonar Analysis
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["master"]
+
+env:
+  DOTNET_VERSION: "9.0.x"
+  SONAR_PROJECT_KEY: "raestradab_AzurefunctionDemo"
+  SONAR_ORGANIZATION: "raestradab"
+
+jobs:
+  build-test-analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # SonarCloud needs full history for accurate blame/analysis
+
+      - name: Setup .NET ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Setup JDK 17 (required by the SonarScanner)
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: "17"
+
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Cache SonarCloud scanner
+        id: cache-sonar-scanner
+        uses: actions/cache@v4
+        with:
+          path: ./.sonar/scanner
+          key: ${{ runner.os }}-sonar-scanner
+          restore-keys: ${{ runner.os }}-sonar-scanner
+
+      - name: Install SonarCloud scanner
+        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ./.sonar/scanner
+          dotnet tool update dotnet-sonarscanner --tool-path ./.sonar/scanner
+
+      - name: Restore dependencies
+        run: dotnet restore AzurefunctionDemo.sln
+
+      - name: Begin SonarCloud analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          ./.sonar/scanner/dotnet-sonarscanner begin \
+            /k:"${{ env.SONAR_PROJECT_KEY }}" \
+            /o:"${{ env.SONAR_ORGANIZATION }}" \
+            /d:sonar.token="${SONAR_TOKEN}" \
+            /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" \
+            /d:sonar.coverage.exclusions="**/Program.cs,**/AzurefunctionDemo.Tests/**"
+
+      - name: Build
+        run: dotnet build AzurefunctionDemo.sln --configuration Release --no-restore
+
+      - name: Run tests with coverage
+        run: |
+          dotnet test AzurefunctionDemo.Tests/AzurefunctionDemo.Tests.csproj \
+            --configuration Release \
+            --no-build \
+            --logger "trx;LogFileName=test-results.trx" \
+            /p:CollectCoverage=true \
+            /p:CoverletOutputFormat=opencover \
+            /p:CoverletOutput=./TestResults/
+
+      - name: End SonarCloud analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.token="${SONAR_TOKEN}"
+
+      - name: Publish test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: AzurefunctionDemo.Tests/TestResults/**
