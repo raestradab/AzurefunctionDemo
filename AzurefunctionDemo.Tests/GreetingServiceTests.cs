@@ -32,7 +32,7 @@ public class GreetingServiceTests
     {
         var result = _sut.BuildGreeting("Rafael");
 
-        Assert.Equal("Hello2, Rafael. This HTTP triggered function executed successfully.", result);
+        Assert.Equal("Hello4, Rafael. This HTTP triggered function executed successfully.", result);
     }
 
     [Fact]
@@ -40,6 +40,6 @@ public class GreetingServiceTests
     {
         var result = _sut.BuildGreeting(" Rafael ");
 
-        Assert.Equal("Hello2,  Rafael . This HTTP triggered function executed successfully.", result);
+        Assert.Equal("Hello4,  Rafael . This HTTP triggered function executed successfully.", result);
     }
 }
