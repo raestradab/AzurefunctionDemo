@@ -1,0 +1,82 @@
+# Rolls a previously-published release back out to an environment. Lists existing
+# Releases (job summary + log), validates the tag you pick actually exists, then reuses
+# deploy-dev.yml / deploy-qa.yml / deploy-prod.yml via workflow_call to redeploy that
+# exact ZIP -- so it goes through the same no-rebuild path (and QA/PROD still require
+# manual approval via their Environment protection rules) as a normal promotion.
+#
+# GitHub Actions workflow_dispatch inputs can't be populated dynamically, so there's no
+# live dropdown of releases: the "list-releases" job prints them (summary + log) and the
+# "tag" input is validated against that list, failing fast with a clear error if it
+# doesn't exist.
+
+name: Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to roll back"
+        required: true
+        type: choice
+        options:
+          - dev
+          - QA
+          - PROD
+      tag:
+        description: "Release tag to roll back to (e.g. v1.0.1) -- check the Releases page, or run this workflow once to see the list in the job summary."
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  list-releases:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.validate.outputs.tag }}
+    steps:
+      - name: List existing releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          {
+            echo "## Available releases"
+            echo
+            echo '```'
+            gh release list --repo "${{ github.repository }}" --limit 50
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Validate selected tag exists
+        id: validate
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ inputs.tag }}"
+          if ! gh release view "$TAG" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            echo "::error::Release '$TAG' not found. See the list above or the Releases page."
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+  rollback-dev:
+    needs: list-releases
+    if: inputs.environment == 'dev'
+    uses: ./.github/workflows/deploy-dev.yml
+    with:
+      tag: ${{ needs.list-releases.outputs.tag }}
+
+  rollback-qa:
+    needs: list-releases
+    if: inputs.environment == 'QA'
+    uses: ./.github/workflows/deploy-qa.yml
+    with:
+      tag: ${{ needs.list-releases.outputs.tag }}
+
+  rollback-prod:
+    needs: list-releases
+    if: inputs.environment == 'PROD'
+    uses: ./.github/workflows/deploy-prod.yml
+    with:
+      tag: ${{ needs.list-releases.outputs.tag }}
