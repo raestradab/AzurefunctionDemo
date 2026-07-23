@@ -1,9 +1,10 @@
 # Continuous Integration: builds the solution, runs the xUnit test suite with code
 # coverage, and publishes the results to SonarCloud.
 #
-# Runs on every push and on pull requests targeting master. This is intentionally kept
-# separate from azure-functions-app-dotnet.yml, which only handles deployment on push
-# to master.
+# Runs on every push to master and on pull requests targeting master. The push trigger
+# is required so create-release.yml (which listens for this workflow via workflow_run)
+# has a completed run on master to gate on -- a pull_request-only trigger never fires
+# on master directly, so the release workflow would never start.
 #
 # Required repository configuration:
 #   - Secret SONAR_TOKEN: a SonarCloud token (My Account > Security on sonarcloud.io).
@@ -14,6 +15,8 @@
 name: CI - Build, Test & Sonar Analysis
 
 on:
+  push:
+    branches: ["master"]
   pull_request:
     branches: ["master"]
 
