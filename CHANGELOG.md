@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), y el
 versionado sigue [SemVer](https://semver.org/), calculado automáticamente con
 [GitVersion](https://gitversion.net/) en el workflow `create-release.yml`.
 
+## [1.2.2](https://github.com/raestradab/AzurefunctionDemo/compare/v1.2.1...v1.2.2) (2026-07-23)
+
+
+### Miscellaneous Chores
+
+* update greeting message and sync tests ([#19](https://github.com/raestradab/AzurefunctionDemo/issues/19)) ([3b1e669](https://github.com/raestradab/AzurefunctionDemo/commit/3b1e669534815a5d89ab420f6f7a46144c605909))
+
 ## [1.2.1](https://github.com/raestradab/AzurefunctionDemo/compare/v1.2.0...v1.2.1) (2026-07-23)
 
 
