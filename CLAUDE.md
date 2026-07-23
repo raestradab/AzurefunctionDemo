@@ -27,6 +27,23 @@ curl "http://localhost:7071/api/HttpTriggerFunction?name=World"
 
 There are no test projects in this repo currently.
 
+## Commit conventions
+
+Use [Conventional Commits](https://www.conventionalcommits.org/) for every commit message:
+
+```
+feat: agregar autenticación JWT
+fix: corregir validación del token
+docs: actualizar README
+refactor: simplificar servicio
+chore: actualizar dependencias
+```
+
+Common types: `feat`, `fix`, `docs`, `refactor`, `chore`, `test`, `ci`. This is required for
+GitVersion (`GitVersion.yml`, workflow `GitHubFlow/v1`) to increment the SemVer version correctly
+in `create-release.yml` — e.g. `fix:`/`feat:` commits drive patch/minor bumps via commit-message
+increments.
+
 ## Architecture
 
 - `Program.cs` — isolated-worker host entry point. Builds a `HostBuilder`, wires up
