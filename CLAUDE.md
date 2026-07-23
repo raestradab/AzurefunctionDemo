@@ -40,9 +40,11 @@ chore: actualizar dependencias
 ```
 
 Common types: `feat`, `fix`, `docs`, `refactor`, `chore`, `test`, `ci`. This is required for
-GitVersion (`GitVersion.yml`, workflow `GitHubFlow/v1`) to increment the SemVer version correctly
-in `create-release.yml` — e.g. `fix:`/`feat:` commits drive patch/minor bumps via commit-message
-increments.
+[Release Please](https://github.com/googleapis/release-please) (`release-please.yml`,
+`.release-please-config.json`) to compute the next SemVer version and generate `CHANGELOG.md`
+correctly — e.g. `fix:` drives a patch bump, `feat:` a minor bump, `feat!:`/`BREAKING CHANGE:` a
+major bump. PR titles are enforced against this convention by the `validate-pr-title` job in
+`ci.yml`.
 
 ## Architecture
 
