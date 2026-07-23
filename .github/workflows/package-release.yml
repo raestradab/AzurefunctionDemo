@@ -5,12 +5,22 @@
 # gets promoted through environments is always the exact bytes that were tested in CI.
 #
 # Does not deploy anything.
+#
+# Also accepts workflow_dispatch (with an explicit tag) as a manual recovery path -- e.g.
+# to backfill a ZIP for a release that was published before RELEASE_PLEASE_TOKEN was wired
+# up, when release: published never fired this workflow in the first place.
 
 name: Package Release
 
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to package (e.g. v1.1.0)"
+        required: true
+        type: string
 
 permissions:
   contents: write # required to upload the ZIP as a release asset
@@ -19,17 +29,21 @@ env:
   DOTNET_VERSION: "9.0.x"
 
 concurrency:
-  group: package-release-${{ github.event.release.tag_name }}
+  group: package-release-${{ github.event.release.tag_name || inputs.tag }}
   cancel-in-progress: false
 
 jobs:
   package:
     runs-on: ubuntu-latest
     steps:
+      - name: Resolve release tag
+        id: release
+        run: echo "tag=${{ github.event.release.tag_name || inputs.tag }}" >> "$GITHUB_OUTPUT"
+
       - name: Checkout published tag
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ steps.release.outputs.tag }}
 
       - name: Setup .NET ${{ env.DOTNET_VERSION }}
         uses: actions/setup-dotnet@v4
@@ -59,12 +73,12 @@ jobs:
       - name: Create ZIP
         run: |
           cd publish
-          zip -r "../AzureFunctionDemo-${{ github.event.release.tag_name }}.zip" .
+          zip -r "../AzureFunctionDemo-${{ steps.release.outputs.tag }}.zip" .
 
       - name: Attach ZIP to the Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload "${{ github.event.release.tag_name }}" \
-            "AzureFunctionDemo-${{ github.event.release.tag_name }}.zip" \
+          gh release upload "${{ steps.release.outputs.tag }}" \
+            "AzureFunctionDemo-${{ steps.release.outputs.tag }}.zip" \
             --clobber

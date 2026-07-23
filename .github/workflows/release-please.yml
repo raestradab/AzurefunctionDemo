@@ -18,7 +18,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Uses a PAT (not the default GITHUB_TOKEN) because GitHub blocks events
+      # triggered by GITHUB_TOKEN from starting other workflow runs. With the
+      # default token, the Release PR never triggered ci.yml and the published
+      # Release never triggered package-release.yml, so no release ever got a
+      # deployable ZIP attached. See RELEASE_PLEASE_TOKEN setup in repo secrets.
       - uses: googleapis/release-please-action@v4
         with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
           config-file: .release-please-config.json
           manifest-file: .release-please-manifest.json
