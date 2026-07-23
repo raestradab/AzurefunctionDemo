@@ -1,0 +1,59 @@
+# Builds and packages the Azure Function exactly once per release, then attaches the
+# ZIP as an asset to the GitHub Release that Release Please already created. This is the
+# only place the deployable artifact is produced -- deploy-dev/qa/prod.yml (Fases 5-7)
+# download this same ZIP from the Release rather than rebuilding it, so the artifact that
+# gets promoted through environments is always the exact bytes that were tested in CI.
+#
+# Does not deploy anything.
+
+name: Package Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write # required to upload the ZIP as a release asset
+
+env:
+  DOTNET_VERSION: "9.0.x"
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout published tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Setup .NET ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore
+        run: dotnet restore AzurefunctionDemo.sln
+
+      - name: Build
+        run: dotnet build AzurefunctionDemo.sln --configuration Release --no-restore
+
+      - name: Publish Azure Function
+        run: |
+          dotnet publish AzurefunctionDemo.csproj \
+            --configuration Release \
+            --no-build \
+            --output publish
+
+      - name: Create ZIP
+        run: |
+          cd publish
+          zip -r "../AzureFunctionDemo-${{ github.event.release.tag_name }}.zip" .
+
+      - name: Attach ZIP to the Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${{ github.event.release.tag_name }}" \
+            "AzureFunctionDemo-${{ github.event.release.tag_name }}.zip" \
+            --clobber
