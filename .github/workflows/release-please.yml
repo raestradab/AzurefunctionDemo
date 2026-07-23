@@ -1,15 +1,19 @@
-# Manual only, on purpose: this used to run on every push to master, which meant both
-# the release PR getting opened/updated AND the actual tag+GitHub Release (once that PR
-# was merged) happened automatically. Now both of those steps require someone to run
-# this workflow by hand:
-#   1. Run it (optionally setting release-as) to create/update the release PR.
-#   2. Merge that PR into master.
-#   3. Run this workflow again -- that run is what actually notices the merge and cuts
-#      the tag + GitHub Release. Nothing happens on push anymore.
+# Runs automatically on every push to master: opens/updates the release PR with the
+# next computed version and CHANGELOG. Merging that PR is still the one human checkpoint
+# (that's Release Please's design -- there's no way to skip reviewing the version/
+# CHANGELOG before it's cut). The push created by merging that PR is what makes THIS
+# workflow run again and actually notice the merge, cutting the tag + GitHub Release --
+# which in turn triggers package-release.yml, which in turn auto-deploys to dev.
+#
+# workflow_dispatch (with an optional release-as override) is still available for
+# forcing a specific version by hand when needed.
 
 name: Release Please
 
 on:
+  push:
+    branches:
+      - master
   workflow_dispatch:
     inputs:
       release-as:

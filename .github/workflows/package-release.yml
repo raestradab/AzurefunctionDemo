@@ -4,11 +4,15 @@
 # download this same ZIP from the Release rather than rebuilding it, so the artifact that
 # gets promoted through environments is always the exact bytes that were tested in CI.
 #
-# Does not deploy anything.
+# On a real `release: published` event, also auto-deploys to Development once packaging
+# succeeds (deploy-dev job below, chained via `needs` so it can't run before the ZIP
+# exists). QA and Production stay manual/approval-gated -- see deploy-qa.yml /
+# deploy-prod.yml / rollback.yml.
 #
 # Also accepts workflow_dispatch (with an explicit tag) as a manual recovery path -- e.g.
 # to backfill a ZIP for a release that was published before RELEASE_PLEASE_TOKEN was wired
-# up, when release: published never fired this workflow in the first place.
+# up, when release: published never fired this workflow in the first place. That manual
+# path does not auto-deploy.
 
 name: Package Release
 
@@ -35,6 +39,8 @@ concurrency:
 jobs:
   package:
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
     steps:
       - name: Resolve release tag
         id: release
@@ -82,3 +88,10 @@ jobs:
           gh release upload "${{ steps.release.outputs.tag }}" \
             "AzureFunctionDemo-${{ steps.release.outputs.tag }}.zip" \
             --clobber
+
+  deploy-dev:
+    needs: package
+    if: github.event_name == 'release'
+    uses: ./.github/workflows/deploy-dev.yml
+    with:
+      tag: ${{ needs.package.outputs.tag }}
