@@ -1,0 +1,52 @@
+name: Create Release
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+env:
+  DOTNET_VERSION: '9.0.x'
+
+jobs:
+  release:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore
+      run: dotnet restore AzurefunctionDemo.sln
+
+    - name: Build
+      run: dotnet build AzurefunctionDemo.sln --configuration Release --no-restore
+
+    - name: Publish Azure Function
+      run: |
+        dotnet publish AzurefunctionDemo/AzurefunctionDemo.csproj \
+        -c Release \
+        -o publish
+
+    - name: Create ZIP
+      run: |
+        cd publish
+        zip -r ../Function.zip .
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: AzureFunction
+        path: Function.zip
