@@ -1,9 +1,16 @@
+# Gated on "CI - Build, Test & Sonar Analysis" (ci.yml) finishing successfully on master,
+# so a build with failing tests never produces a release artifact. Requires ci.yml to have
+# a push-to-master trigger -- pull_request runs alone never complete "on master" and would
+# never fire this workflow.
+
 name: Create Release
 
 on:
-  push:
-    branches:
-      - master
+  workflow_run:
+    workflows: ["CI - Build, Test & Sonar Analysis"]
+    branches: [master]
+    types:
+      - completed
 
 permissions:
   contents: write
@@ -13,6 +20,7 @@ env:
 
 jobs:
   release:
+    if: github.event.workflow_run.conclusion == 'success'
 
     runs-on: ubuntu-latest
 
@@ -21,6 +29,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
       with:
+        ref: ${{ github.event.workflow_run.head_sha }}
         fetch-depth: 0
 
     - name: Setup .NET
