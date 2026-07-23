@@ -44,8 +44,10 @@ jobs:
 
       - name: Show Version
         run: |
-          echo "SemVer: ${{ steps.gitversion.outputs.SemVer }}"
-          echo "FullSemVer: ${{ steps.gitversion.outputs.FullSemVer }}"
+          echo "SemVer=${{ steps.gitversion.outputs.SemVer }}"
+          echo "MajorMinorPatch=${{ steps.gitversion.outputs.MajorMinorPatch }}"
+          echo "NuGetVersion=${{ steps.gitversion.outputs.NuGetVersion }}"
+          echo "FullSemVer=${{ steps.gitversion.outputs.FullSemVer }}"
 
       - name: Restore
         run: dotnet restore AzurefunctionDemo.sln
