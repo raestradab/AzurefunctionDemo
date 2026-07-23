@@ -36,7 +36,7 @@ jobs:
 
     - name: Publish Azure Function
       run: |
-        dotnet publish AzurefunctionDemo/AzurefunctionDemo.csproj \
+        dotnet publish AzurefunctionDemo.csproj \
         -c Release \
         -o publish
 
