@@ -28,7 +28,7 @@ public class HttpTriggerFunctionTests
         var response = await _sut.Run(request);
 
         var body = await ReadBodyAsync(response);
-        Assert.Equal("Hello7, Rafael. This HTTP triggered function executed successfully.", body);
+        Assert.Equal("Hello8, Rafael. This HTTP triggered function executed successfully.", body);
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public class HttpTriggerFunctionTests
         var response = await _sut.Run(request);
 
         var body = await ReadBodyAsync(response);
-        Assert.Equal("Hello7, Rafael. This HTTP triggered function executed successfully.", body);
+        Assert.Equal("Hello8, Rafael. This HTTP triggered function executed successfully.", body);
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public class HttpTriggerFunctionTests
         var response = await _sut.Run(request);
 
         var body = await ReadBodyAsync(response);
-        Assert.Equal("Hello7, FromQuery. This HTTP triggered function executed successfully.", body);
+        Assert.Equal("Hello8, FromQuery. This HTTP triggered function executed successfully.", body);
     }
 
     [Fact]
