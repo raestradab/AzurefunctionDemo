@@ -24,6 +24,11 @@ on:
 permissions:
   contents: read
 
+# Never run two deploys to the same environment at once -- queue instead of racing.
+concurrency:
+  group: deploy-QA
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest

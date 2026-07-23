@@ -3,10 +3,7 @@
 # SonarCloud. This is the only workflow that runs on pull requests -- it never deploys,
 # creates tags, or creates releases (that's release-please.yml / package-release.yml).
 #
-# Runs on every push to master and on pull requests targeting master. The push trigger
-# is required so create-release.yml (which listens for this workflow via workflow_run)
-# has a completed run on master to gate on -- a pull_request-only trigger never fires
-# on master directly, so the release workflow would never start.
+# Runs on every push to master and on pull requests targeting master.
 #
 # Required repository configuration:
 #   - Secret SONAR_TOKEN: a SonarCloud token (My Account > Security on sonarcloud.io).
@@ -26,6 +23,12 @@ env:
   DOTNET_VERSION: "9.0.x"
   SONAR_PROJECT_KEY: "raestradab_AzurefunctionDemo"
   SONAR_ORGANIZATION: "raestradab"
+
+# A new push to the same PR/branch supersedes the previous run -- no point burning
+# Actions minutes finishing a build for a commit that's no longer HEAD.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   # Enforces Conventional Commits on the PR title (squash-merge commit message),
@@ -95,6 +98,13 @@ jobs:
         run: |
           mkdir -p ./.sonar/scanner
           dotnet tool update dotnet-sonarscanner --tool-path ./.sonar/scanner
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: ${{ runner.os }}-nuget-
 
       - name: Restore dependencies
         run: dotnet restore AzurefunctionDemo.sln

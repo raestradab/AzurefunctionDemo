@@ -30,6 +30,12 @@ on:
 permissions:
   contents: read
 
+# Belt-and-suspenders alongside each deploy-*.yml's own concurrency group: don't let two
+# rollback runs targeting the same environment race each other either.
+concurrency:
+  group: deploy-${{ inputs.environment }}
+  cancel-in-progress: false
+
 jobs:
   list-releases:
     runs-on: ubuntu-latest
