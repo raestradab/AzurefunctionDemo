@@ -6,6 +6,22 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), y el
 versionado sigue [SemVer](https://semver.org/), calculado automáticamente con
 [GitVersion](https://gitversion.net/) en el workflow `create-release.yml`.
 
+## [1.1.0](https://github.com/raestradab/AzurefunctionDemo/compare/v1.0.0...v1.1.0) (2026-07-23)
+
+
+### Features
+
+* add deploy-dev workflow ([67762f3](https://github.com/raestradab/AzurefunctionDemo/commit/67762f3670f2e4e27ef238681e9818342266a452))
+* add deploy-prod workflow with manual approval ([48b7207](https://github.com/raestradab/AzurefunctionDemo/commit/48b7207f8a658b1d11622a7635d9bf1d2f29f737))
+* add deploy-qa workflow with manual approval ([303bf1b](https://github.com/raestradab/AzurefunctionDemo/commit/303bf1b4e0bca00e6080eec979d9388b46ffb5bd))
+* add package-release workflow ([2533ff2](https://github.com/raestradab/AzurefunctionDemo/commit/2533ff21e80d4b5c77af047fb84af94fc9a5a8e4))
+* add rollback workflow ([1d4e9d9](https://github.com/raestradab/AzurefunctionDemo/commit/1d4e9d922e066f166f9ad085c15272728fb17986))
+
+
+### Bug Fixes
+
+* rename release-please config files to required dotfile names ([474346d](https://github.com/raestradab/AzurefunctionDemo/commit/474346dee09d22a14e67d33537b189eb1dcce171))
+
 ## [1.0.1-1] - 2026-07-23
 
 ### Changed
