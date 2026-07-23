@@ -43,8 +43,8 @@ Common types: `feat`, `fix`, `docs`, `refactor`, `chore`, `test`, `ci`. This is 
 [Release Please](https://github.com/googleapis/release-please) (`release-please.yml`,
 `.release-please-config.json`) to compute the next SemVer version and generate `CHANGELOG.md`
 correctly — e.g. `fix:` drives a patch bump, `feat:` a minor bump, `feat!:`/`BREAKING CHANGE:` a
-major bump. PR titles are enforced against this convention by the `validate-pr-title` job in
-`ci.yml`.
+major bump. Note: `ci.yml` no longer enforces this on PR titles (the `validate-pr-title` job was
+removed), so it's on convention only.
 
 ## Architecture
 
