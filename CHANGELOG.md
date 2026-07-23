@@ -6,6 +6,24 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), y el
 versionado sigue [SemVer](https://semver.org/), calculado automáticamente con
 [GitVersion](https://gitversion.net/) en el workflow `create-release.yml`.
 
+## [1.1.2](https://github.com/raestradab/AzurefunctionDemo/compare/v1.1.1...v1.1.2) (2026-07-23)
+
+
+### Documentation
+
+* note validate-pr-title removal in CLAUDE.md ([d0c4b0a](https://github.com/raestradab/AzurefunctionDemo/commit/d0c4b0ae97942b17542d5eceeec9ba1260cc3c4e))
+
+
+### Miscellaneous Chores
+
+* make all commit types trigger a release ([b9d7eb0](https://github.com/raestradab/AzurefunctionDemo/commit/b9d7eb00a9f533b78f5bbc4a4a999cbdd98c5163))
+* update greeting message and sync tests ([#13](https://github.com/raestradab/AzurefunctionDemo/issues/13)) ([ffc20ea](https://github.com/raestradab/AzurefunctionDemo/commit/ffc20ea1d90b8721003fb5128d7f004d568d6e44))
+
+
+### Continuous Integration
+
+* remove PR title Conventional Commits validation ([31060e0](https://github.com/raestradab/AzurefunctionDemo/commit/31060e0440d15b4d607af645b4db130fe779dc82))
+
 ## [1.1.1](https://github.com/raestradab/AzurefunctionDemo/compare/v1.1.0...v1.1.1) (2026-07-23)
 
 
