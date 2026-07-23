@@ -9,6 +9,11 @@
 # exists). QA and Production stay manual/approval-gated -- see deploy-qa.yml /
 # deploy-prod.yml / rollback.yml.
 #
+# IMPORTANT: this auto-deploy does NOT show up under the "Deploy Development" workflow
+# in the Actions tab -- it's the "deploy-dev" job inside THIS workflow's run (see
+# deploy-dev job's comment for why). Check "Package Release" runs, not "Deploy
+# Development", to see what got auto-deployed and which tag.
+#
 # Also accepts workflow_dispatch (with an explicit tag) as a manual recovery path -- e.g.
 # to backfill a ZIP for a release that was published before RELEASE_PLEASE_TOKEN was wired
 # up, when release: published never fired this workflow in the first place. That manual
@@ -119,3 +124,8 @@ jobs:
           app-name: ${{ secrets.AZURE_FUNCTIONAPP_NAME }}
           package: ./artifact/AzureFunctionDemo-${{ needs.package.outputs.tag }}.zip
           publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+
+      - name: Deployment summary
+        run: |
+          echo "### Deployed to dev :rocket:" >> "$GITHUB_STEP_SUMMARY"
+          echo "Tag: \`${{ needs.package.outputs.tag }}\`" >> "$GITHUB_STEP_SUMMARY"
