@@ -1,0 +1,59 @@
+# Deploys a previously-built release ZIP to the QA Azure Function App. Never builds
+# anything -- downloads the exact same asset package-release.yml attached to the GitHub
+# Release (the same ZIP already validated in Development) and deploys that.
+#
+# Uses GitHub Environment "QA", which has a required reviewer configured, so the job
+# pauses for manual approval before running.
+
+name: Deploy QA
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to deploy (e.g. v1.0.1). Defaults to the latest release."
+        required: false
+        type: string
+  workflow_call:
+    inputs:
+      tag:
+        description: "Release tag to deploy (e.g. v1.0.1). Defaults to the latest release."
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: QA
+    steps:
+      - name: Resolve release tag
+        id: release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ inputs.tag }}"
+          if [ -z "$TAG" ]; then
+            TAG=$(gh release view --repo "${{ github.repository }}" --json tagName -q .tagName)
+          fi
+          echo "Deploying tag: $TAG"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Download release asset
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release download "${{ steps.release.outputs.tag }}" \
+            --repo "${{ github.repository }}" \
+            --pattern "AzureFunctionDemo-*.zip" \
+            --dir ./artifact \
+            --clobber
+
+      - name: Deploy to Azure Functions (QA)
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ secrets.AZURE_FUNCTIONAPP_NAME }}
+          package: ./artifact/AzureFunctionDemo-${{ steps.release.outputs.tag }}.zip
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
