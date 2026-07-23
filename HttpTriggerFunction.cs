@@ -19,6 +19,7 @@ public class HttpTriggerFunction
         [HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequestData req)
     {
 
+
         _logger.LogInformation("C# HTTP trigger function processed a request.");
 
         var name = req.Query["name"];
