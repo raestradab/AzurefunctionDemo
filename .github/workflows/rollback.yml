@@ -1,13 +1,20 @@
 # Rolls a previously-published release back out to an environment. Lists existing
-# Releases (job summary + log), validates the tag you pick actually exists, then reuses
-# deploy-dev.yml / deploy-qa.yml / deploy-prod.yml via workflow_call to redeploy that
-# exact ZIP -- so it goes through the same no-rebuild path (and QA/PROD still require
-# manual approval via their Environment protection rules) as a normal promotion.
+# Releases (job summary + log), validates the tag you pick actually exists, then
+# redeploys that exact ZIP -- same no-rebuild path (and QA/PROD still require manual
+# approval via their Environment protection rules) as a normal promotion.
 #
 # GitHub Actions workflow_dispatch inputs can't be populated dynamically, so there's no
 # live dropdown of releases: the "list-releases" job prints them (summary + log) and the
 # "tag" input is validated against that list, failing fast with a clear error if it
 # doesn't exist.
+#
+# The three rollback-* jobs below duplicate deploy-dev/qa/prod.yml's download+deploy
+# steps instead of calling those workflows via `uses:` -- chaining a workflow_call into
+# a job that declares `environment:` left the environment's secrets empty
+# ("app-name: should not be empty"), even though the called job also declared the same
+# environment. Environment secrets only resolved reliably when the job itself (not a
+# workflow_call chain into it) owns the `environment:` key, so each job here does that
+# directly. See the same fix/note in package-release.yml.
 
 name: Rollback
 
@@ -69,20 +76,68 @@ jobs:
   rollback-dev:
     needs: list-releases
     if: inputs.environment == 'dev'
-    uses: ./.github/workflows/deploy-dev.yml
-    with:
-      tag: ${{ needs.list-releases.outputs.tag }}
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - name: Download release asset
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release download "${{ needs.list-releases.outputs.tag }}" \
+            --repo "${{ github.repository }}" \
+            --pattern "AzureFunctionDemo-*.zip" \
+            --dir ./artifact \
+            --clobber
+
+      - name: Deploy to Azure Functions (dev)
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ secrets.AZURE_FUNCTIONAPP_NAME }}
+          package: ./artifact/AzureFunctionDemo-${{ needs.list-releases.outputs.tag }}.zip
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
 
   rollback-qa:
     needs: list-releases
     if: inputs.environment == 'QA'
-    uses: ./.github/workflows/deploy-qa.yml
-    with:
-      tag: ${{ needs.list-releases.outputs.tag }}
+    runs-on: ubuntu-latest
+    environment: QA
+    steps:
+      - name: Download release asset
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release download "${{ needs.list-releases.outputs.tag }}" \
+            --repo "${{ github.repository }}" \
+            --pattern "AzureFunctionDemo-*.zip" \
+            --dir ./artifact \
+            --clobber
+
+      - name: Deploy to Azure Functions (QA)
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ secrets.AZURE_FUNCTIONAPP_NAME }}
+          package: ./artifact/AzureFunctionDemo-${{ needs.list-releases.outputs.tag }}.zip
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
 
   rollback-prod:
     needs: list-releases
     if: inputs.environment == 'PROD'
-    uses: ./.github/workflows/deploy-prod.yml
-    with:
-      tag: ${{ needs.list-releases.outputs.tag }}
+    runs-on: ubuntu-latest
+    environment: PROD
+    steps:
+      - name: Download release asset
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release download "${{ needs.list-releases.outputs.tag }}" \
+            --repo "${{ github.repository }}" \
+            --pattern "AzureFunctionDemo-*.zip" \
+            --dir ./artifact \
+            --clobber
+
+      - name: Deploy to Azure Functions (Production)
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ secrets.AZURE_FUNCTIONAPP_NAME }}
+          package: ./artifact/AzureFunctionDemo-${{ needs.list-releases.outputs.tag }}.zip
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
