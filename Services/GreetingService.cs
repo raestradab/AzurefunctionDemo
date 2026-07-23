@@ -6,6 +6,6 @@ public static class GreetingService
     {
         return string.IsNullOrWhiteSpace(name)
             ? "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.4"
-            : $"Hello12, {name}. This HTTP triggered function executed successfully.";
+            : $"Hello13, {name}. This HTTP triggered function executed successfully.";
     }
 }

@@ -30,7 +30,7 @@ public class GreetingServiceTests
     {
         var result = GreetingService.BuildGreeting("Rafael");
 
-        Assert.Equal("Hello12, Rafael. This HTTP triggered function executed successfully.", result);
+        Assert.Equal("Hello13, Rafael. This HTTP triggered function executed successfully.", result);
     }
 
     [Fact]
@@ -38,6 +38,6 @@ public class GreetingServiceTests
     {
         var result = GreetingService.BuildGreeting(" Rafael ");
 
-        Assert.Equal("Hello12,  Rafael . This HTTP triggered function executed successfully.", result);
+        Assert.Equal("Hello13,  Rafael . This HTTP triggered function executed successfully.", result);
     }
 }
