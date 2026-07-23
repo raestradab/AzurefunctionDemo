@@ -1,5 +1,7 @@
-# Continuous Integration: builds the solution, runs the xUnit test suite with code
-# coverage, and publishes the results to SonarCloud.
+# Continuous Integration: validates PR titles against Conventional Commits, builds the
+# solution, runs the xUnit test suite with code coverage, and publishes the results to
+# SonarCloud. This is the only workflow that runs on pull requests -- it never deploys,
+# creates tags, or creates releases (that's release-please.yml / package-release.yml).
 #
 # Runs on every push to master and on pull requests targeting master. The push trigger
 # is required so create-release.yml (which listens for this workflow via workflow_run)
@@ -26,8 +28,36 @@ env:
   SONAR_ORGANIZATION: "raestradab"
 
 jobs:
+  # Enforces Conventional Commits on the PR title (squash-merge commit message),
+  # which Release Please (release-please.yml) relies on to compute the next version.
+  validate-pr-title:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Validate PR title follows Conventional Commits
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            refactor
+            chore
+            test
+            ci
+            build
+            perf
+            revert
+            style
+
   build-test-analyze:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
