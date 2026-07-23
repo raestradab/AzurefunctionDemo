@@ -1,9 +1,21 @@
+# Manual only, on purpose: this used to run on every push to master, which meant both
+# the release PR getting opened/updated AND the actual tag+GitHub Release (once that PR
+# was merged) happened automatically. Now both of those steps require someone to run
+# this workflow by hand:
+#   1. Run it (optionally setting release-as) to create/update the release PR.
+#   2. Merge that PR into master.
+#   3. Run this workflow again -- that run is what actually notices the merge and cuts
+#      the tag + GitHub Release. Nothing happens on push anymore.
+
 name: Release Please
 
 on:
-  push:
-    branches:
-      - master
+  workflow_dispatch:
+    inputs:
+      release-as:
+        description: "Force this exact version (e.g. 1.2.0), overriding the version Release Please would auto-compute from commits. Leave empty for the normal auto-computed version."
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -28,3 +40,4 @@ jobs:
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
           config-file: .release-please-config.json
           manifest-file: .release-please-manifest.json
+          release-as: ${{ inputs.release-as }}
